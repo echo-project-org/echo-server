@@ -507,10 +507,10 @@ class Rooms {
         }
     }
 
-    async joinRoom(data) {
-        //TODO Multi server - Use data.serverId to discriminate which server the user wants to join and join router named serverId@roomId
-        await this.addRoom(data);
-        this.addUserToRoom(data);
+    joinRoom(data) {
+        this.addRoom(data).then(() => {
+            this.addUserToRoom(data);
+        });
     }
 
     endConnection(data) {
@@ -523,42 +523,57 @@ class Rooms {
         this.connectedClients.delete(data.id);
     }
 
-    async addRoom(data) {
-        let id = data.roomId + "@" + data.serverId;
-        if (!this.rooms.has(id)) {
-            //find the worker with the least cpu usage
-            let minUsage = this.workers[0].getResourceUsage().ru_utime;
-            let minWorker = this.workers[0];
+    _getMinUsageWorker() {
+        return new Promise(async (resolve, reject) => {
+            let minUsage = Infinity;
+            let minWorker = null;
 
-            this.workers.forEach(async (worker, _) => {
+            for (const worker of this.workers) {
                 let usage = await worker.getResourceUsage();
-                console.log("[W-" + worker.pid + "] CPU time: " + usage.ru_utime);
+                console.log(colors.changeColor("cyan", "[W-" + worker.pid + "] Worker usage: " + usage.ru_utime));
                 if (usage.ru_utime < minUsage) {
                     minUsage = usage.ru_utime;
                     minWorker = worker;
+                } else if (minWorker === null) {
+                    minWorker = worker;
                 }
-            });
+            }
 
-            //create a router
-            let r = await minWorker.createRouter({ mediaCodecs: codecs, appData: { roomId: id } });
-            r.observer.on('close', () => {
-                console.log(colors.changeColor("cyan", "[R-" + r.id + "] Mediasoup router closed"));
-            });
+            resolve(minWorker);
+        });
+    }
 
-            r.observer.on('newtransport', (transport) => {
-                console.log(colors.changeColor("cyan", "[R-" + r.id + "] Mediasoup transport created with id " + transport.id));
-            });
+    addRoom(data) {
+        return new Promise(async (resolve, reject) => {
+            let id = data.roomId + "@" + data.serverId;
+            if (!this.rooms.has(id)) {
+                this._getMinUsageWorker().then(async (minWorker) => {
+                    //create a router
+                    let r = await minWorker.createRouter({ mediaCodecs: codecs, appData: { roomId: id } });
+                    r.observer.on('close', () => {
+                        console.log(colors.changeColor("cyan", "[R-" + r.id + "] Mediasoup router closed"));
+                    });
 
-            console.log(colors.changeColor("green", "New room " + id + " created"));
-            this.rooms.set(id, {
-                id,
-                private: false,
-                users: new Map(),
-                password: null,
-                display: "New room",
-                mediasoupRouter: r
-            });
-        }
+                    r.observer.on('newtransport', (transport) => {
+                        console.log(colors.changeColor("cyan", "[R-" + r.id + "] Mediasoup transport created with id " + transport.id));
+                    });
+
+                    console.log(colors.changeColor("green", "New room " + id + " created"));
+                    this.rooms.set(id, {
+                        id,
+                        private: false,
+                        users: new Map(),
+                        password: null,
+                        display: "New room",
+                        mediasoupRouter: r
+                    });
+
+                    resolve();
+                });
+            } else {
+                resolve();
+            }
+        });
     }
 
     removeUserFromRooms(id) {
@@ -681,6 +696,8 @@ class Rooms {
                 }).then((transport) => {
                     newUser.setSendVideoTransport(transport, router.rtpCapabilities);
                 });
+            } else {
+                console.log(colors.changeColor("red", "Room " + actualRoomId + " does not exist"));
             }
         } else console.log(colors.changeColor("red", "Can't add user " + id + " to room " + actualRoomId + ", user is not connected to socket"));
     }
