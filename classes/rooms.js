@@ -106,7 +106,7 @@ class Rooms {
 
             fetch(API_URL + "auth/validate", options)
                 .then(async (response) => {
-                    if(response.ok) {
+                    if (response.ok) {
                         let json = await response.json();
                         let id = String(json.id);
 
@@ -115,7 +115,7 @@ class Rooms {
                             const user = this.connectedClients.get(id);
                             await user.clearTransports();
                         }
-            
+
                         const newUser = new User(socket, id);
                         this.connectedClients.set(id, newUser);
                         console.log(colors.changeColor("yellow", "New socket connection from client " + id));
@@ -457,7 +457,9 @@ class Rooms {
     videoBroadcastStarted(data) {
         if (this.connectedClients.has(data.id)) {
             this.connectedClients.forEach((user, _) => {
-                user.videoBroadcastStarted(data);
+                if (data.serverId === user.serverId) {
+                    user.videoBroadcastStarted(data);
+                }
             });
         }
     }
@@ -465,7 +467,9 @@ class Rooms {
     broadcastNowHasAudio(data) {
         if (this.connectedClients.has(data.id)) {
             this.connectedClients.forEach((user, _) => {
-                user.broadcastNowHasAudio(data);
+                if (data.serverId === user.serverId) {
+                    user.broadcastNowHasAudio(data);
+                }
             });
         }
     }
@@ -473,7 +477,9 @@ class Rooms {
     videoBroadcastStop(data) {
         if (this.connectedClients.has(data.id)) {
             this.connectedClients.forEach((user, _) => {
-                user.videoBroadcastStop(data);
+                if (data.serverId === user.serverId) {
+                    user.videoBroadcastStop(data);
+                }
             });
         }
     }
