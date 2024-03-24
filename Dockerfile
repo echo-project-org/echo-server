@@ -4,7 +4,7 @@ WORKDIR /app
 
 COPY package*.json ./
 
-RUN python3 -m ensurepip --upgrade
+RUN python3 -m pip
 
 RUN npm install
 
