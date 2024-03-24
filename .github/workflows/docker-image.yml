@@ -18,8 +18,9 @@ jobs:
 
     - name: Install python3
       run: sudo apt install python3
-    - name: Ensure
-      run: python3 -m ensurepip
+
+    - name: Install pip
+      run: sudo apt install python3-pip
 
     - name: Build the Docker image
       run: docker build . --file Dockerfile --tag echo-server:$(date +%s)

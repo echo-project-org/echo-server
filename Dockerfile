@@ -4,6 +4,8 @@ WORKDIR /app
 
 COPY package*.json ./
 
+RUN python -m ensurepip --upgrade
+
 RUN npm install
 
 COPY . .
