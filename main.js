@@ -12,7 +12,7 @@ const io = new Server(config.port, {
 io.use((socket, next) => {
     // middleware to do whatever we want
     // const request = socket.request;
-    next(); 
+    next();
 });
 
 
