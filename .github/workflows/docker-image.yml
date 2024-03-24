@@ -19,6 +19,7 @@ jobs:
     - name: Build the Docker image
       run: |
         docker login --username KuryGabriele --password ${{ secrets.GH_PAT }} ghcr.io
-        docker build . --file Dockerfile --tag ghcr.io/echo-project-org/echo-server:latest
+        docker buildx use $(docker buildx create --platform linux/amd64,linux/arm64 --name mybuilder)
+        docker buildx build --platform=linux/amd64,linux/arm64 . --tag ghcr.io/echo-project-org/echo-server:latest
         docker push ghcr.io/echo-project-org/echo-server:latest
     

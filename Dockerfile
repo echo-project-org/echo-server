@@ -14,4 +14,4 @@ COPY . .
 
 EXPOSE 6982
 
-ENTRYPOINT ["npm", "start"]
+CMD ["npm", "start"]
