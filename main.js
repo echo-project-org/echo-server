@@ -5,7 +5,7 @@ const config = new Loader();
 const { Server } = require('socket.io')
 const io = new Server(config.port, {
     cors: {
-        origin: '*', 
+        origin: '*',
     }
 });
 
