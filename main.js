@@ -13,7 +13,7 @@ io.use((socket, next) => {
     // middleware to do whatever we want
     // const request = socket.request;
     next();
-});
+}); 
 
 
 const Rooms = require("./classes/rooms");
