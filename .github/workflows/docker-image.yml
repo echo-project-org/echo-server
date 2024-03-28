@@ -34,6 +34,7 @@ jobs:
           tags: ghcr.io/echo-project-org/echo-server:latest
           platforms: linux/amd64,linux/arm64
           no-cache: false
+          file: ./Dockerfile
           cache-from: type=gha
           cache-to: type=gha,mode=max
           outputs: type=registry,dest=ghcr.io/echo-project-org/echo-server:latest
