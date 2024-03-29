@@ -489,7 +489,7 @@ class User {
                 paused: true
             });
 
-            let audioConsumer = null;
+            let audioConsumer = null; 
             if (this.broadcastWithAudio) {
                 audioConsumer = await this.sendVideoTransport.consume({
                     producerId: data.id + "-video-audio",
