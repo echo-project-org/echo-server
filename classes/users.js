@@ -460,6 +460,7 @@ class User {
             this.triggerEvent("videoBroadcastStop", {
                 id: this.id,
                 roomId: this.currentRoom,
+                serverId: this.serverId,
             });
         } catch (error) {
             console.error("Error in stopScreenSharing", error);
