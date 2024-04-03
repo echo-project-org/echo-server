@@ -378,6 +378,7 @@ class User {
             this.triggerEvent("videoBroadcastStarted", {
                 id: this.id,
                 roomId: this.currentRoom,
+                serverId: this.serverId,
             });
 
             cb({
