@@ -51,6 +51,7 @@ class User {
         });
         this.socket.on("client.join", (data) => {
             data.id = this.id;
+            data.token = this.token;
             this.serverId = data.serverId;
             this.triggerEvent("join", data);
         });

@@ -3,6 +3,7 @@ const mediasoup = require("mediasoup");
 const Colors = require("./colors");
 const colors = new Colors();
 const os = require("os");
+const EchoApi = require("./EchoApi");
 
 const codecs = [{
     kind: "audio",
@@ -32,6 +33,8 @@ const API_URL = "https://echo.kuricki.com/api/";
 
 class Rooms {
     constructor(io, socket) {
+        this.api = new EchoApi(API_URL);
+
         this.emitter = io;
         this.rooms = new Map();
         this.connectedClients = new Map();
@@ -104,7 +107,7 @@ class Rooms {
                 }
             };
 
-            fetch(API_URL + "auth/validate", options)
+            this.api.call(token, "auth/validate", "GET", null, true, false)
                 .then(async (response) => {
                     if (response.ok) {
                         let json = await response.json();
@@ -508,9 +511,30 @@ class Rooms {
     }
 
     joinRoom(data) {
-        //TODO MOVE THE API REQUEST HERE, SO THAT WE ONLY HAVE TO CHECK PERMISSIONS ONCE
-        this.addRoom(data).then(() => {
-            this.addUserToRoom(data);
+        //get the user
+        const id = data.id;
+        const roomId = data.roomId;
+        const serverId = data.serverId;
+        let a = this.connectedClients.get(id);
+
+        //Tell api tha user is in room
+        this.api.call(
+            a.token,
+            "rooms/join",
+            "POST",
+            {
+                userId: id,
+                roomId: '' + roomId,
+                serverId: serverId
+            },
+            true,
+            false
+        ).then(async (response) => {
+            if (response.ok) {
+                this.addRoom(data).then(() => {
+                    this.addUserToRoom(data);
+                });
+            }
         });
     }
 
@@ -593,6 +617,20 @@ class Rooms {
         if (this.connectedClients.has(data.id)) {
             const user = this.connectedClients.get(data.id);
             const roomId = user.getCurrentRoom();
+            //Tell api that user left room
+            this.api.call(
+                user.token,
+                "rooms/join",
+                "POST",
+                {
+                    userId: user.id,
+                    roomId: "0",
+                    serverId: user.serverId
+                },
+                true,
+                false
+            )
+
             if (this.rooms.has(roomId)) {
                 this.connectedClients.forEach((u, _) => {
                     if (data.id !== user.id) {
