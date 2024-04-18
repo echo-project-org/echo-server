@@ -116,7 +116,7 @@ class Rooms {
                             await user.clearTransports();
                         }
 
-                        const newUser = new User(socket, id);
+                        const newUser = new User(socket, id, token);
                         this.connectedClients.set(id, newUser);
                         console.log(colors.changeColor("yellow", "New socket connection from client " + id));
                         this.registerClientEvents(newUser);
@@ -508,6 +508,7 @@ class Rooms {
     }
 
     joinRoom(data) {
+        //TODO MOVE THE API REQUEST HERE, SO THAT WE ONLY HAVE TO CHECK PERMISSIONS ONCE
         this.addRoom(data).then(() => {
             this.addUserToRoom(data);
         });
